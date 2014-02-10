@@ -1,14 +1,38 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
-from werkzeug import secure_filename
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from werkzeug import secure_filename, SharedDataMiddleware
+
+ALLOWED_EXTENSIONS = {'py'}
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # limit max upload to 16 MB
 
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # limit max upload to 16 MB
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.abspath('.'), 'uploads')
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route("/")
 def index():
     return render_template('index.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect('/')
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''
 
 if __name__ == '__main__':
     app.run('0.0.0.0',debug=True)
