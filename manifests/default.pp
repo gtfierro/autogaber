@@ -16,7 +16,7 @@ exec { 'install rethink':
 Package { ensure => present }
 
 $aptpackages = ['git','vim','tmux','python-pip','python-dev','curl','ipython']
-$pippackages = ['flask','requests','rethinkdb']
+$pippackages = ['flask','requests','rethinkdb','docker-py']
 
 package { $aptpackages:
     require => [ Exec['apt-get update'] ],
