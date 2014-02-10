@@ -1,6 +1,10 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename, SharedDataMiddleware
+import docker
+import time
+
+c = docker.Client()
 
 ALLOWED_EXTENSIONS = {'py'}
 
@@ -11,6 +15,12 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.path.abspath('.'), 'uploads')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+def run_file(filename):
+    container = c.create_container('python', 'python /mnt/vol/{0}'.format(filename), volumes=['/mnt/vol'])
+    c.start(container, binds={app.config['UPLOAD_FOLDER']: '/mnt/vol'})
+    time.sleep(6)
+    return c.logs(container)
 
 @app.route("/")
 def index():
@@ -23,6 +33,7 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            print run_file(filename)
             return redirect('/')
     return '''
     <!doctype html>
