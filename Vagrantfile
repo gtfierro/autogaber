@@ -9,6 +9,9 @@ sudo apt-get -y install lxc-docker
 sudo groupadd docker
 sudo gpasswd -a ${USER} docker
 sudo service docker restart
+cp /vagrant/Dockerfile .
+sudo service docker start
+sudo docker build -t python - < Dockerfile
 SCRIPT
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
