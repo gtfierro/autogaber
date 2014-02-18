@@ -1,0 +1,11 @@
+Title: Test Assignment
+
+Description: Upload a file that prints out the numbers 1 though 5, each on its
+  own line. This should pass the test.
+
+Output: |+
+  1
+  2
+  3
+  4
+  5
