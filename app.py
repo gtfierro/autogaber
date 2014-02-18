@@ -20,7 +20,9 @@ def run_file(filename):
     container = c.create_container('python', 'python /mnt/vol/{0}'.format(filename), volumes=['/mnt/vol'])
     c.start(container, binds={app.config['UPLOAD_FOLDER']: '/mnt/vol'})
     time.sleep(6)
-    return c.logs(container)
+    result = c.logs(container)
+    c.stop(container)
+    return result
 
 @app.route("/")
 def index():
