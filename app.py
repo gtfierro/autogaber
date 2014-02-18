@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 from werkzeug import secure_filename, SharedDataMiddleware
 import docker
 import time
+import yaml
+import difflib
 
 c = docker.Client()
 
@@ -27,6 +29,33 @@ def run_file(filename):
 @app.route("/")
 def index():
     return render_template('index.html')
+
+@app.route('/<assignment>/upload', methods=['GET','POST'])
+def test_assignment(assignment):
+    assignment = yaml.load(open('assignments/{0}.yaml'.format(assignment)))
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            expected = assignment['Output'].strip()
+            user = run_file(filename).strip()
+            print expected
+            print user
+            print ''.join(difflib.unified_diff(expected, user))
+            return redirect('/')
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <h3>{0}</h3>
+    <p>{1}</p>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''.format(assignment['Title'], assignment['Description'])
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
